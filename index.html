@@ -697,7 +697,7 @@ const carrierTrackingUrl = {
   "5ff5953d6af37054cb7f1bb9": null,  // ส่งบ้าน
   "5ffac6005aecdd423b71fe39": null,  // จัดส่งชื่อลูกค้า
 };
-  "67bd7c1c2d0f8589d8bf40f2": "Chanbox (KERRY)",
+  "67bd7c1c2d0f8589d8bf40f2": "KERRY",        // Chanbox (KERRY)
   "5ffabba692b2e10a9b7a69ad": "FLASH",
   "5ff5953d6af37054cb7f1bb7": "KERRY",
   "5ff5953d6af37054cb7f1bb6": "EMS",
@@ -841,8 +841,10 @@ function populateSuccess(order) {
   document.getElementById('displayDueDate').textContent = order.due || 'ยังไม่กำหนด';
   document.getElementById('displayPM').textContent = order.pm || '-';
 
-  // คำนวณ % จาก step (0=0%, 1=33%, 2=66%, 3=100%)
-  const percent = Math.round((currentStep / (stepNames.length - 1)) * 100);
+  // คำนวณ % — ถ้า step สุดท้ายให้เป็น 100% เสมอ
+  const totalSteps = stepNames.length - 1;
+  const isDone = currentStep >= totalSteps;
+  const percent = isDone ? 100 : Math.round((currentStep / totalSteps) * 100);
   document.getElementById('displayPercent').textContent = percent + '%';
 
   // แสดง Tracking เฉพาะ Step 3 และมีครบทั้ง carrier และ tracking
@@ -868,11 +870,11 @@ function populateSuccess(order) {
     document.getElementById('progressFill').style.width = percent + '%';
   }, 100);
 
-  // Render steps
+  // Render steps — ถ้า step สุดท้ายทุก step เป็น ✓ done หมด
   const stepsRow = document.querySelector('.steps-row');
   stepsRow.innerHTML = stepNames.map((name, i) => {
-    let cls = i < currentStep ? 'done' : i === currentStep ? 'active' : 'pending';
-    let dot = i < currentStep ? '✓' : i === currentStep ? '●' : '';
+    let cls = (isDone || i < currentStep) ? 'done' : i === currentStep ? 'active' : 'pending';
+    let dot = (isDone || i < currentStep) ? '✓' : i === currentStep ? '●' : '';
     return `<div class="step-item ${cls}">
       <div class="step-dot ${cls}">${dot}</div>
       <div class="step-name">${name}</div>
