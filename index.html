@@ -183,11 +183,13 @@
 
       <div class="order-card" id="orderCard">
         <div class="order-card-header">
-          <div class="order-num" id="displayOrderNum">ORD-48544</div>
-          <div class="order-status" id="displayStatus">🔄 กำลังดำเนินการ</div>
+          <div>
+            <div class="order-num" id="displayOrderNum">ORD-48544</div>
+            <div style="font-size:0.85rem;font-weight:600;color:var(--text);margin-top:3px;" id="displayJobNameHeader">-</div>
+          </div>
+          <div class="order-status" id="displayStatus">กำลังดำเนินการ</div>
         </div>
         <div class="order-card-body">
-          <div class="order-title" id="displayJobName">เว็บไซต์บริษัท v2.0</div>
 
           <div class="progress-section" style="padding:14px 0 10px;">
             <div class="progress-label">
@@ -218,20 +220,11 @@
             </div>
           </div>
 
-          <div class="info-row">
-            <div class="info-icon">📅</div>
-            <div>
-              <div class="info-label">วันที่รับงาน</div>
-              <div class="info-value" id="displayStartDate">15 มกราคม 2567</div>
-            </div>
-          </div>
-          <div class="info-row">
-            <div class="info-icon">⏰</div>
-            <div>
-              <div class="info-label">กำหนดส่งงาน</div>
-              <div class="info-value" id="displayDueDate" style="color:var(--warning)">28 มกราคม 2567</div>
-            </div>
-          </div>
+          <!-- hidden elements for JS — ไม่แสดงผล -->
+          <div style="display:none;" id="displayJobName"></div>
+          <div style="display:none;" id="displayStartDate"></div>
+          <div style="display:none;" id="displayDueDate"></div>
+
           <div class="info-row" id="trackingSection" style="display:none;">
             <div class="info-icon">🚚</div>
             <div style="flex:1;">
@@ -243,12 +236,12 @@
                    onclick="copyTracking()">-</div>
               <div style="font-size:0.58rem;color:var(--sub);margin-top:2px;">กดเพื่อคัดลอก</div>
               <button id="trackShipmentBtn" onclick="trackShipment()"
-                style="margin-top:10px; width:100%; padding:10px;
-                       background:var(--green); border:none; border-radius:10px;
+                style="margin-top:10px; width:100%; padding:14px;
+                       background:var(--brand); border:none; border-radius:10px;
                        color:#fff; font-family:'IBM Plex Sans Thai',sans-serif;
-                       font-size:0.78rem; font-weight:700; cursor:pointer;
+                       font-size:1rem; font-weight:700; cursor:pointer;
                        display:none;">
-                🚚 เช็คสถานะการจัดส่ง
+                เช็คสถานะการจัดส่ง
               </button>
             </div>
           </div>
@@ -479,6 +472,7 @@ function populateSuccess(order) {
   document.getElementById('displayOrderNum').textContent = order.num || '-';
   document.getElementById('displayStatus').textContent = stepNames[currentStep];
   document.getElementById('displayJobName').textContent = jobName || '-';
+  document.getElementById('displayJobNameHeader').textContent = jobName || '-';
   document.getElementById('displayStartDate').textContent = order.start || '-';
   document.getElementById('displayDueDate').textContent = order.due || 'ยังไม่กำหนด';
   // displayPM ถูกตัดออกจาก UI แล้ว
