@@ -63,7 +63,7 @@
 
   /* Header */
   .header {
-    padding: 28px 24px 18px;
+    padding: 16px 24px;
     display: flex; align-items: center; gap: 12px;
     border-bottom: 1px solid var(--border);
     background: #fff;
@@ -450,7 +450,8 @@
 
   <!-- Header -->
   <div class="header">
-    <div class="logo-mark">📋</div>
+    <img src="https://www.911print.co.th/wp-content/uploads/2019/06/logo.png" 
+         style="height:36px; width:auto; object-fit:contain;" alt="911Print">
     <div class="header-text">
       <div class="header-title">Work Tracker</div>
       <div class="header-sub">ระบบติดตามสถานะงาน</div>
@@ -552,15 +553,11 @@
           </div>
           <div class="step-item done">
             <div class="step-dot done">✓</div>
-            <div class="step-name">วางแผน</div>
+            <div class="step-name">ออกแบบ/<br>เตรียมไฟล์</div>
           </div>
           <div class="step-item active">
             <div class="step-dot active">●</div>
-            <div class="step-name">ออกแบบ</div>
-          </div>
-          <div class="step-item pending">
-            <div class="step-dot pending"></div>
-            <div class="step-name">พัฒนา</div>
+            <div class="step-name">กำลังผลิต</div>
           </div>
           <div class="step-item pending">
             <div class="step-dot pending"></div>
@@ -669,7 +666,7 @@ const mockOrders = {
   }
 };
 
-const stepNames = ['รับงาน','วางแผน','ออกแบบ','พัฒนา','ส่งมอบ'];
+const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
 
 function handleInput(input) {
   const clearBtn = document.getElementById('clearBtn');
@@ -739,7 +736,16 @@ async function handleSubmit() {
       })
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      setLoading(false);
+      showError('เกิดข้อผิดพลาด กรุณาลองใหม่');
+      console.error('Response was:', text);
+      return;
+    }
     setLoading(false);
 
     if (data.found) {
