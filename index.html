@@ -208,6 +208,26 @@
               <div class="info-value" id="displayPM">คุณสมชาย พัฒนาดี</div>
             </div>
           </div>
+          <div class="info-row" id="trackingSection" style="display:none;">
+            <div class="info-icon">🚚</div>
+            <div style="flex:1;">
+              <div class="info-label">จัดส่งโดย</div>
+              <div class="info-value" id="displayCarrier" style="margin-bottom:6px;">-</div>
+              <div class="info-label">เลข Tracking</div>
+              <div class="info-value" id="displayTracking"
+                   style="color:var(--green);font-family:monospace;letter-spacing:0.05em;cursor:pointer;"
+                   onclick="copyTracking()">-</div>
+              <div style="font-size:0.58rem;color:var(--sub);margin-top:2px;">กดเพื่อคัดลอก</div>
+              <button id="trackShipmentBtn" onclick="trackShipment()"
+                style="margin-top:10px; width:100%; padding:10px;
+                       background:var(--green); border:none; border-radius:10px;
+                       color:#fff; font-family:'IBM Plex Sans Thai',sans-serif;
+                       font-size:0.78rem; font-weight:700; cursor:pointer;
+                       display:none;">
+                🚚 เช็คสถานะการจัดส่ง
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="progress-section">
