@@ -680,7 +680,15 @@ const mockOrders = {
 
 const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
 
-const listToStep = {
+const carrierMap = {
+  "67bd7c1c2d0f8589d8bf40f2": "Chanbox (KERRY)",
+  "5ffabba692b2e10a9b7a69ad": "FLASH",
+  "5ff5953d6af37054cb7f1bb7": "KERRY",
+  "5ff5953d6af37054cb7f1bb6": "EMS",
+  "5ff5953d6af37054cb7f1bb8": "มารับเอง",
+  "5ff5953d6af37054cb7f1bb9": "ส่งบ้าน/ร้านลูกค้า",
+  "5ffac6005aecdd423b71fe39": "จัดส่งชื่อลูกค้า",
+};
   // Step 0 — รับงาน
   "5ff57181adf09b7708000b1f": 0,  // รอข้อมูลลูกค้า
   "693105de51ad2b608d93a831": 0,  // งานเคลม-รออนุมัติ
@@ -823,9 +831,10 @@ function populateSuccess(order) {
 
   // แสดง Tracking เฉพาะ Step 3 และมีครบทั้ง carrier และ tracking
   const trackingSection = document.getElementById('trackingSection');
+  const carrierName = carrierMap[order.carrier] || order.carrier;
   if (currentStep === 3 && order.tracking && order.carrier) {
     document.getElementById('displayTracking').textContent = order.tracking;
-    document.getElementById('displayCarrier').textContent = order.carrier;
+    document.getElementById('displayCarrier').textContent = carrierName;
     trackingSection.style.display = 'flex';
   } else {
     trackingSection.style.display = 'none';
