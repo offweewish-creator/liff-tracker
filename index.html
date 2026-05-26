@@ -481,7 +481,7 @@ function populateSuccess(order) {
   document.getElementById('displayJobName').textContent = jobName || '-';
   document.getElementById('displayStartDate').textContent = order.start || '-';
   document.getElementById('displayDueDate').textContent = order.due || 'ยังไม่กำหนด';
-  document.getElementById('displayPM').textContent = order.pm || '-';
+  // displayPM ถูกตัดออกจาก UI แล้ว
 
   const totalSteps = stepNames.length - 1;
   const isDone = currentStep >= totalSteps;
