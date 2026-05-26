@@ -534,6 +534,18 @@
               <div class="info-value" id="displayPM">คุณสมชาย พัฒนาดี</div>
             </div>
           </div>
+          <div class="info-row" id="trackingSection" style="display:none;">
+            <div class="info-icon">🚚</div>
+            <div style="flex:1;">
+              <div class="info-label">จัดส่งโดย</div>
+              <div class="info-value" id="displayCarrier" style="margin-bottom:6px;">-</div>
+              <div class="info-label">เลข Tracking</div>
+              <div class="info-value" id="displayTracking"
+                   style="color:var(--green);font-family:monospace;letter-spacing:0.05em;cursor:pointer;"
+                   onclick="copyTracking()">-</div>
+              <div style="font-size:0.58rem;color:var(--sub);margin-top:2px;">กดเพื่อคัดลอก</div>
+            </div>
+          </div>
         </div>
 
         <div class="progress-section">
@@ -668,6 +680,35 @@ const mockOrders = {
 
 const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
 
+const listToStep = {
+  // Step 0 — รับงาน
+  "5ff57181adf09b7708000b1f": 0,  // รอข้อมูลลูกค้า
+  "693105de51ad2b608d93a831": 0,  // งานเคลม-รออนุมัติ
+
+  // Step 1 — ออกแบบ/เตรียมไฟล์
+  "679c867387358dd1a863b2ee": 1,  // รอคิวออกแบบ ADs 911
+  "5ff548cbfc1d23199273804f": 1,  // รอคิวออกแบบ
+  "5ff548d0dbbc6a1b195af626": 1,  // กำลัง..ออกแบบ
+  "5ff555f77d73566aa7a0e070": 1,  // งานแก้ไขก่อน
+  "5ff548e1f5ba428b313933f6": 1,  // เรียงไฟล์
+  "5ff6cdd83b983462ca88fbbb": 1,  // กำลัง..เรียงไฟล์
+
+  // Step 2 — กำลังผลิต
+  "6558631b2c3eb5b32bcdd3d5": 2,  // พิมพ์บัตรPVC / กระบอกน้ำ
+  "5ff548f3bf94976964c261e0": 2,  // พิมพ์
+  "5ff548f774a5cc2f9e2116bb": 2,  // Die-cut
+  "664ef47d875056421cb8fe14": 2,  // Waffle Sticker (Die-cut)
+  "66ce866ab46a301f8f97a045": 2,  // SmallTown - TIKTOK - Shopee
+  "69a93fc639e088d34e4300a4": 2,  // บัตร PVC (พร้อมจัดส่ง)
+
+  // Step 3 — ส่งมอบ
+  "6a11709816bfe3bf0f376de4": 3,  // รอย้าย 26/5
+  "5ff54905dad0103e7d8ecbd3": 3,  // พร้อมจัดส่ง
+  "66cc19d8ecc66e8f07e4dcf9": 3,  // SmallTown (แพ็คแล้ว)
+  "6002985fdafd287c2f5a6892": 3,  // จัดส่งแล้ว
+  "65d0307ead9db55ceebb8bb0": 3,  // งานเกินกำหนด
+};
+
 function handleInput(input) {
   const clearBtn = document.getElementById('clearBtn');
   clearBtn.classList.toggle('show', input.value.length > 0);
@@ -764,24 +805,42 @@ async function handleSubmit() {
 }
 
 function populateSuccess(order) {
-  document.getElementById('displayOrderNum').textContent = order.num;
-  document.getElementById('displayStatus').textContent = order.status;
-  document.getElementById('displayJobName').textContent = order.job;
-  document.getElementById('displayStartDate').textContent = order.start;
-  document.getElementById('displayDueDate').textContent = order.due;
-  document.getElementById('displayPM').textContent = order.pm;
-  document.getElementById('displayPercent').textContent = order.percent + '%';
+  // แปลง listId → step number
+  const currentStep = listToStep[order.listId] ?? 0;
+
+  // แสดงชื่องาน (ตัด [ORD-XXXXX] ออกจากชื่อ)
+  const jobName = (order.num || '').replace(/\[ORD-\d+\]/gi, '').trim();
+  document.getElementById('displayOrderNum').textContent = order.num || '-';
+  document.getElementById('displayStatus').textContent = stepNames[currentStep];
+  document.getElementById('displayJobName').textContent = jobName || '-';
+  document.getElementById('displayStartDate').textContent = order.start || '-';
+  document.getElementById('displayDueDate').textContent = order.due || 'ยังไม่กำหนด';
+  document.getElementById('displayPM').textContent = order.pm || '-';
+
+  // คำนวณ % จาก step (0=0%, 1=33%, 2=66%, 3=100%)
+  const percent = Math.round((currentStep / (stepNames.length - 1)) * 100);
+  document.getElementById('displayPercent').textContent = percent + '%';
+
+  // แสดง Tracking เฉพาะ Step 3 และมีครบทั้ง carrier และ tracking
+  const trackingSection = document.getElementById('trackingSection');
+  if (currentStep === 3 && order.tracking && order.carrier) {
+    document.getElementById('displayTracking').textContent = order.tracking;
+    document.getElementById('displayCarrier').textContent = order.carrier;
+    trackingSection.style.display = 'flex';
+  } else {
+    trackingSection.style.display = 'none';
+  }
 
   // Animate progress bar
   setTimeout(() => {
-    document.getElementById('progressFill').style.width = order.percent + '%';
+    document.getElementById('progressFill').style.width = percent + '%';
   }, 100);
 
   // Render steps
   const stepsRow = document.querySelector('.steps-row');
   stepsRow.innerHTML = stepNames.map((name, i) => {
-    let cls = i < order.step ? 'done' : i === order.step ? 'active' : 'pending';
-    let dot = i < order.step ? '✓' : i === order.step ? '●' : '';
+    let cls = i < currentStep ? 'done' : i === currentStep ? 'active' : 'pending';
+    let dot = i < currentStep ? '✓' : i === currentStep ? '●' : '';
     return `<div class="step-item ${cls}">
       <div class="step-dot ${cls}">${dot}</div>
       <div class="step-name">${name}</div>
@@ -800,6 +859,16 @@ function resetToInput() {
 function toggleNotify(el) {
   // จะเรียก LINE API เพื่อ opt-in/out notification
   console.log('Notify:', el.checked ? 'ON' : 'OFF');
+}
+
+function copyTracking() {
+  const tracking = document.getElementById('displayTracking').textContent;
+  navigator.clipboard.writeText(tracking).then(() => {
+    const el = document.getElementById('displayTracking');
+    const original = el.textContent;
+    el.textContent = '✅ คัดลอกแล้ว!';
+    setTimeout(() => { el.textContent = original; }, 2000);
+  });
 }
 
 function contactAdmin() {
