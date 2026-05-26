@@ -544,6 +544,14 @@
                    style="color:var(--green);font-family:monospace;letter-spacing:0.05em;cursor:pointer;"
                    onclick="copyTracking()">-</div>
               <div style="font-size:0.58rem;color:var(--sub);margin-top:2px;">กดเพื่อคัดลอก</div>
+              <button id="trackShipmentBtn" onclick="trackShipment()"
+                style="margin-top:10px; width:100%; padding:10px;
+                       background:var(--green); border:none; border-radius:10px;
+                       color:#fff; font-family:'IBM Plex Sans Thai',sans-serif;
+                       font-size:0.78rem; font-weight:700; cursor:pointer;
+                       display:none;">
+                🚚 เช็คสถานะการจัดส่ง
+              </button>
             </div>
           </div>
         </div>
@@ -680,7 +688,15 @@ const mockOrders = {
 
 const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
 
-const carrierMap = {
+const carrierTrackingUrl = {
+  "67bd7c1c2d0f8589d8bf40f2": "https://th.kerryexpress.com/th/track/",        // Chanbox (KERRY)
+  "5ffabba692b2e10a9b7a69ad": "https://www.flashexpress.co.th/tracking/",      // FLASH
+  "5ff5953d6af37054cb7f1bb7": "https://th.kerryexpress.com/th/track/",         // KERRY
+  "5ff5953d6af37054cb7f1bb6": "https://track.thailandpost.co.th/",             // EMS
+  "5ff5953d6af37054cb7f1bb8": null,  // มารับเอง
+  "5ff5953d6af37054cb7f1bb9": null,  // ส่งบ้าน
+  "5ffac6005aecdd423b71fe39": null,  // จัดส่งชื่อลูกค้า
+};
   "67bd7c1c2d0f8589d8bf40f2": "Chanbox (KERRY)",
   "5ffabba692b2e10a9b7a69ad": "FLASH",
   "5ff5953d6af37054cb7f1bb7": "KERRY",
@@ -836,6 +852,13 @@ function populateSuccess(order) {
     document.getElementById('displayTracking').textContent = order.tracking;
     document.getElementById('displayCarrier').textContent = carrierName;
     trackingSection.style.display = 'flex';
+
+    // เก็บ carrier id ไว้ใช้ใน trackShipment()
+    window.currentCarrierId = order.carrier;
+
+    // โชว์ปุ่มเฉพาะขนส่งที่มี URL
+    const trackBtn = document.getElementById('trackShipmentBtn');
+    trackBtn.style.display = carrierTrackingUrl[order.carrier] ? 'block' : 'none';
   } else {
     trackingSection.style.display = 'none';
   }
@@ -868,6 +891,14 @@ function resetToInput() {
 function toggleNotify(el) {
   // จะเรียก LINE API เพื่อ opt-in/out notification
   console.log('Notify:', el.checked ? 'ON' : 'OFF');
+}
+
+function trackShipment() {
+  const carrierId = window.currentCarrierId;
+  const baseUrl = carrierTrackingUrl[carrierId];
+  if (baseUrl) {
+    window.open(baseUrl, '_blank');
+  }
 }
 
 function copyTracking() {
