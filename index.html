@@ -469,12 +469,12 @@
       <div class="input-group">
         <div class="input-label">
           <span>เลขออเดอร์</span>
-          <span style="font-size:0.6rem;color:var(--muted);">เช่น 2024-089</span>
+          <span style="font-size:0.6rem;color:var(--muted);">เช่น 48544</span>
         </div>
         <div class="input-wrapper" id="inputWrapper">
           <div class="input-prefix">ORD-</div>
-          <input type="text" id="orderInput" placeholder="2024-089"
-                 inputmode="text" autocomplete="off"
+          <input type="text" id="orderInput" placeholder="48544"
+                 inputmode="numeric" autocomplete="off"
                  oninput="handleInput(this)" onkeydown="handleKey(event)">
           <button class="clear-btn" id="clearBtn" onclick="clearInput()">✕</button>
         </div>
@@ -487,7 +487,7 @@
         <div class="hint-icon">💡</div>
         <div class="hint-text">
           <strong>เลขออเดอร์อยู่ที่ไหน?</strong>
-          อยู่ในข้อความยืนยันที่ทีมงานส่งให้ตอนรับงาน เช่น <strong style="font-family:monospace">ORD-2024-089</strong>
+          อยู่ในข้อความยืนยันที่ทีมงานส่งให้ตอนรับงาน เช่น <strong style="font-family:monospace">ORD-48544</strong>
         </div>
       </div>
 
@@ -649,20 +649,20 @@ initLiff();
 
 // ── Mock Data (จะถูกแทนด้วย Trello API จริง) ──
 const mockOrders = {
-  '2024-089': {
-    num: 'ORD-2024-089', job: 'เว็บไซต์บริษัท v2.0',
+  '48544': {
+    num: 'ORD-48544', job: 'เว็บไซต์บริษัท v2.0',
     status: '🔄 กำลังดำเนินการ', start: '15 มกราคม 2567',
     due: '28 มกราคม 2567', pm: 'คุณสมชาย พัฒนาดี', percent: 65,
-    step: 2 // 0=รับงาน 1=วางแผน 2=ออกแบบ 3=พัฒนา 4=ส่งมอบ
+    step: 2
   },
-  '2024-090': {
-    num: 'ORD-2024-090', job: 'โลโก้บริษัท + Corporate Identity',
+  '48545': {
+    num: 'ORD-48545', job: 'โลโก้บริษัท + Corporate Identity',
     status: '✅ รอการอนุมัติ', start: '10 มกราคม 2567',
     due: '20 มกราคม 2567', pm: 'คุณมาลี ครีเอทีฟ', percent: 90,
     step: 3
   },
-  '2024-091': {
-    num: 'ORD-2024-091', job: 'ถ่ายภาพสินค้า 50 รายการ',
+  '48546': {
+    num: 'ORD-48546', job: 'ถ่ายภาพสินค้า 50 รายการ',
     status: '📥 รับงานแล้ว', start: '18 มกราคม 2567',
     due: '5 กุมภาพันธ์ 2567', pm: 'คุณพิชัย ช่างภาพ', percent: 15,
     step: 0
@@ -713,8 +713,7 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-function handleSubmit() {
-  // ใส่ Webhook URL จาก Make ตรงนี้
+// ── Make Webhook URL ──
 const MAKE_WEBHOOK = "https://hook.eu1.make.com/uduj35tliet9vpcu6szv41o24i6i5qu8";
 
 async function handleSubmit() {
@@ -722,8 +721,8 @@ async function handleSubmit() {
   if (!raw) { showError('กรุณากรอกเลขออเดอร์ก่อน'); return; }
 
   const key = raw.replace(/^ORD-/i, '').trim();
-  if (!/^\d{4}-\d{3,}/.test(key) && !/^\d+$/.test(key)) {
-    showError('รูปแบบไม่ถูกต้อง เช่น 2024-089');
+  if (!/^\d+$/.test(key)) {
+    showError('รูปแบบไม่ถูกต้อง เช่น 48544');
     return;
   }
 
@@ -744,7 +743,7 @@ async function handleSubmit() {
     setLoading(false);
 
     if (data.found) {
-      populateSuccess(data);   // แสดงผลจาก Trello จริง
+      populateSuccess(data);
       showScreen('screen-success');
     } else {
       document.getElementById('notfoundNum').textContent = 'ORD-' + key;
@@ -756,21 +755,6 @@ async function handleSubmit() {
     showError('เกิดข้อผิดพลาด กรุณาลองใหม่');
     console.error(err);
   }
-}
-  setLoading(true);
-
-  // Simulate API call delay
-  setTimeout(() => {
-    setLoading(false);
-    const order = mockOrders[key];
-    if (order) {
-      populateSuccess(order);
-      showScreen('screen-success');
-    } else {
-      document.getElementById('notfoundNum').textContent = 'ORD-' + key;
-      showScreen('screen-notfound');
-    }
-  }, 1400);
 }
 
 function populateSuccess(order) {
