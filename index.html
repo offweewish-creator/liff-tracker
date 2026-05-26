@@ -178,15 +178,11 @@
     <!-- ===== SCREEN 2: SUCCESS ===== -->
     <div class="screen" id="screen-success">
 
-      <div class="success-title">พบข้อมูลงานแล้ว!</div>
-      <p class="success-sub">นี่คือสถานะล่าสุดของงานคุณ<br>อัปเดตอัตโนมัติทุกครั้งที่มีความเคลื่อนไหว</p>
+      <div class="success-title">สถานะงานล่าสุด</div>
 
       <div class="order-card" id="orderCard">
         <div class="order-card-header">
-          <div>
-            <div class="order-num" id="displayOrderNum">ORD-48544</div>
-            <div style="font-size:0.85rem;font-weight:600;color:var(--text);margin-top:3px;" id="displayJobNameHeader">-</div>
-          </div>
+          <div class="order-num" id="displayOrderNum">ORD-48544</div>
           <div class="order-status" id="displayStatus">กำลังดำเนินการ</div>
         </div>
         <div class="order-card-body">
@@ -314,7 +310,7 @@ async function initLiff() {
     // แสดงชื่อใน header
     const headerSub = document.querySelector(".header-sub");
     if (headerSub && profile.displayName) {
-      headerSub.textContent = "สวัสดี " + profile.displayName;
+      headerSub.textContent = "สวัสดี คุณ" + profile.displayName;
     }
 
   } catch (err) {
@@ -472,7 +468,6 @@ function populateSuccess(order) {
   document.getElementById('displayOrderNum').textContent = order.num || '-';
   document.getElementById('displayStatus').textContent = stepNames[currentStep];
   document.getElementById('displayJobName').textContent = jobName || '-';
-  document.getElementById('displayJobNameHeader').textContent = jobName || '-';
   document.getElementById('displayStartDate').textContent = order.start || '-';
   document.getElementById('displayDueDate').textContent = order.due || 'ยังไม่กำหนด';
   // displayPM ถูกตัดออกจาก UI แล้ว
