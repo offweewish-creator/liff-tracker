@@ -451,7 +451,7 @@ async function handleSubmit() {
     if (data.found) {
       populateSuccess(data);
       showScreen('screen-success');
-      saveUID(data.num);
+      saveUID('ORD-' + key); // ส่งเฉพาะเลขออเดอร์ล้วนๆ
     } else {
       document.getElementById('notfoundNum').textContent = 'ORD-' + key;
       showScreen('screen-notfound');
