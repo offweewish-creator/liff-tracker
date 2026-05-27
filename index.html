@@ -451,6 +451,7 @@ async function handleSubmit() {
     if (data.found) {
       populateSuccess(data);
       showScreen('screen-success');
+      saveUID(data.num);
     } else {
       document.getElementById('notfoundNum').textContent = 'ORD-' + key;
       showScreen('screen-notfound');
@@ -534,6 +535,27 @@ function resetToInput() {
 function toggleNotify(el) {
   // จะเรียก LINE API เพื่อ opt-in/out notification
   console.log('Notify:', el.checked ? 'ON' : 'OFF');
+}
+
+// ── บันทึก UID ลง Google Sheets ──
+const SAVE_UID_WEBHOOK = "https://hook.eu1.make.com/nwktjjrwnjnpxllsgrd9y8on22m4btcv";
+
+async function saveUID(orderNumber) {
+  if (!window.lineUID || window.lineUID === 'unknown') return;
+  try {
+    await fetch(SAVE_UID_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderNumber: orderNumber,
+        lineUID: window.lineUID,
+        lineName: window.lineName || '',
+        timestamp: new Date().toISOString()
+      })
+    });
+  } catch(e) {
+    console.warn('Save UID failed:', e);
+  }
 }
 
 function contactAdmin() {
