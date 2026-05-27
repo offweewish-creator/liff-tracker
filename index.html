@@ -452,6 +452,7 @@ async function handleSubmit() {
       populateSuccess(data);
       showScreen('screen-success');
       saveUID('ORD-' + key); // ส่งเฉพาะเลขออเดอร์ล้วนๆ
+      window.currentOrderKey = key; // เก็บไว้ให้ toggleNotify ใช้
     } else {
       document.getElementById('notfoundNum').textContent = 'ORD-' + key;
       showScreen('screen-notfound');
@@ -533,8 +534,20 @@ function resetToInput() {
 }
 
 function toggleNotify(el) {
-  // จะเรียก LINE API เพื่อ opt-in/out notification
-  console.log('Notify:', el.checked ? 'ON' : 'OFF');
+  const isOn = el.checked;
+  const key = window.currentOrderKey;
+  if (!key || !window.lineUID || window.lineUID === 'unknown') return;
+  fetch(SAVE_UID_WEBHOOK, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      orderNumber: 'ORD-' + key,
+      lineUID: window.lineUID,
+      lineName: window.lineName || '',
+      timestamp: new Date().toISOString(),
+      notify: isOn
+    })
+  });
 }
 
 // ── บันทึก UID ลง Google Sheets ──
