@@ -563,7 +563,8 @@ async function saveUID(orderNumber) {
         orderNumber: orderNumber,
         lineUID: window.lineUID,
         lineName: window.lineName || '',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        notify: true
       })
     });
   } catch(e) {
