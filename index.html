@@ -323,23 +323,6 @@ async function initLiff() {
 
 initLiff();
 
-// ═══════════════════════════════════════════════════════
-// ⚙️  TRELLO CUSTOM FIELD IDs — กรอก ID ของแต่ละ field ที่นี่
-//     หา ID ได้จาก Trello API:
-//     GET https://api.trello.com/1/boards/{boardId}/customFields?key=...&token=...
-// ═══════════════════════════════════════════════════════
-const CUSTOM_FIELD_IDS = {
-  carrier:  "5ff5953d6af37054cb7f1bb5",  // จัดส่งโดย (dropdown)
-  tracking: "5ff593d88f8b4a7ebb8c0402",  // Tracking No: (text)
-};
-// ═══════════════════════════════════════════════════════
-
-// ── Helper: ดึงค่า custom field จาก array โดยใช้ idCustomField (ไม่ขึ้นกับลำดับ) ──
-function getCustomField(items, fieldId) {
-  if (!Array.isArray(items)) return null;
-  return items.find(f => f.idCustomField === fieldId) || null;
-}
-
 // ── Mock Data (จะถูกแทนด้วย Trello API จริง) ──
 const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
 
@@ -354,7 +337,7 @@ const carrierTrackingUrl = {
 };
 
 const carrierMap = {
-  "67bd7c1c2d0f8589d8bf40f2": "Chanbox (KERRY)",
+  "67bd7c1c2d0f8589d8bf40f2": "KERRY",
   "5ffabba692b2e10a9b7a69ad": "FLASH",
   "5ff5953d6af37054cb7f1bb7": "KERRY",
   "5ff5953d6af37054cb7f1bb6": "EMS",
@@ -430,9 +413,27 @@ function showScreen(id) {
 // ── Make Webhook URL ──
 const MAKE_WEBHOOK = "https://hook.eu1.make.com/uduj35tliet9vpcu6szv41o24i6i5qu8";
 
+// ── Rate Limiting ──
+const RATE_LIMIT = 5;       // สูงสุด 5 ครั้ง
+const RATE_WINDOW = 60000;  // ใน 60 วินาที
+let requestLog = [];
+
+function isRateLimited() {
+  const now = Date.now();
+  requestLog = requestLog.filter(t => now - t < RATE_WINDOW);
+  if (requestLog.length >= RATE_LIMIT) return true;
+  requestLog.push(now);
+  return false;
+}
+
 async function handleSubmit() {
   const raw = document.getElementById('orderInput').value.trim();
   if (!raw) { showError('กรุณากรอกเลขออเดอร์ก่อน'); return; }
+
+  if (isRateLimited()) {
+    showError('ค้นหาบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่');
+    return;
+  }
 
   const key = raw.replace(/^ORD-/i, '').trim();
   if (!/^\d+$/.test(key)) {
@@ -491,45 +492,23 @@ function populateSuccess(order) {
   document.getElementById('displayJobName').textContent = jobName || '-';
   document.getElementById('displayStartDate').textContent = order.start || '-';
   document.getElementById('displayDueDate').textContent = order.due || 'ยังไม่กำหนด';
+  // displayPM ถูกตัดออกจาก UI แล้ว
 
   const totalSteps = stepNames.length - 1;
   const isDone = currentStep >= totalSteps;
   const percent = isDone ? 100 : Math.round((currentStep / totalSteps) * 100);
   document.getElementById('displayPercent').textContent = percent + '%';
 
-  // ── ดึง carrier และ tracking จาก customFieldItems โดยใช้ Custom Field ID ──
-  // รองรับทั้ง 2 รูปแบบที่ Make.com อาจส่งมา:
-  //   1. order.customFieldItems = [{idCustomField, idValue, value}, ...]  ← array จาก Trello
-  //   2. order.carrier / order.tracking = ค่าตรงๆ (legacy fallback)
-  let carrierId = null;
-  let trackingNum = null;
-
-  const cfItems = order.customFieldItems;
-  if (Array.isArray(cfItems) && cfItems.length > 0) {
-    // วิธีใหม่: lookup ด้วย idCustomField (ไม่ขึ้นกับลำดับ bundle)
-    const carrierField  = getCustomField(cfItems, CUSTOM_FIELD_IDS.carrier);
-    const trackingField = getCustomField(cfItems, CUSTOM_FIELD_IDS.tracking);
-
-    // carrier เป็น dropdown → ใช้ idValue (option ID)
-    carrierId   = carrierField?.idValue || null;
-    // tracking เป็น text → ใช้ value.text
-    trackingNum = trackingField?.value?.text || null;
-  } else {
-    // fallback สำหรับ Make.com scenario แบบเดิมที่ส่ง carrier/tracking ตรงๆ
-    carrierId   = order.carrier   || null;
-    trackingNum = order.tracking  || null;
-  }
-
   // Tracking section
   const trackingSection = document.getElementById('trackingSection');
-  const carrierName = carrierMap[carrierId] || carrierId;
-  if (currentStep === 3 && trackingNum && carrierId) {
-    document.getElementById('displayTracking').textContent = trackingNum;
+  const carrierName = carrierMap[order.carrier] || order.carrier;
+  if (currentStep === 3 && order.tracking && order.carrier) {
+    document.getElementById('displayTracking').textContent = order.tracking;
     document.getElementById('displayCarrier').textContent = carrierName;
     trackingSection.style.display = 'flex';
-    window.currentCarrierId = carrierId;
+    window.currentCarrierId = order.carrier;
     const trackBtn = document.getElementById('trackShipmentBtn');
-    if (trackBtn) trackBtn.style.display = carrierTrackingUrl[carrierId] ? 'block' : 'none';
+    if (trackBtn) trackBtn.style.display = carrierTrackingUrl[order.carrier] ? 'block' : 'none';
   } else {
     trackingSection.style.display = 'none';
   }
