@@ -321,7 +321,18 @@ async function initLiff() {
   }
 }
 
-initLiff();
+async function initLiffAndCheck() {
+  await initLiff();
+  const params = new URLSearchParams(window.location.search);
+  const order = params.get('order');
+  if (order) {
+    document.getElementById('orderInput').value = order;
+    document.getElementById('clearBtn').classList.add('show');
+    handleSubmit();
+  }
+}
+
+initLiffAndCheck();
 
 // ── Mock Data (จะถูกแทนด้วย Trello API จริง) ──
 const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
