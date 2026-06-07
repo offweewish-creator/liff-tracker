@@ -338,9 +338,9 @@ initLiffAndCheck();
 const stepNames = ['รับงาน','ออกแบบ/เตรียมไฟล์','กำลังผลิต','ส่งมอบ'];
 
 const carrierTrackingUrl = {
-  "67bd7c1c2d0f8589d8bf40f2": "https://th.kex-express.com/th/track/",
-  "5ffabba692b2e10a9b7a69ad": "https://www.flashexpress.co.th/fle/tracking",
-  "5ff5953d6af37054cb7f1bb7": "https://th.kex-express.com/th/track/",
+  "67bd7c1c2d0f8589d8bf40f2": "https://th.kex-express.com/th/track/?track=",
+  "5ffabba692b2e10a9b7a69ad": "https://www.flashexpress.co.th/fle/tracking?se=",
+  "5ff5953d6af37054cb7f1bb7": "https://th.kex-express.com/th/track/?track=",
   "5ff5953d6af37054cb7f1bb6": "https://track.thailandpost.co.th/",
   "5ff5953d6af37054cb7f1bb8": null,
   "5ff5953d6af37054cb7f1bb9": null,
@@ -542,7 +542,10 @@ function populateSuccess(order) {
 function trackShipment() {
   const carrierId = window.currentCarrierId;
   const baseUrl = carrierTrackingUrl[carrierId];
-  if (baseUrl) window.open(baseUrl, '_blank');
+  if (!baseUrl) return;
+  const trackingNum = document.getElementById('displayTracking').textContent.trim();
+  const fullUrl = baseUrl.includes('?track=') ? baseUrl + encodeURIComponent(trackingNum) : baseUrl;
+  window.open(fullUrl, '_blank');
 }
 
 function copyTracking() {
